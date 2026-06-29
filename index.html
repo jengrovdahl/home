@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Home</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body,#root{height:100%;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F8F7F4;overflow:hidden;}
+input,select,textarea,button{font-family:inherit;}
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:220px;min-width:220px;background:#1C1917;display:flex;flex-direction:column;overflow:hidden;}
+.sh{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.ss{font-size:10px;color:#A8A29E;letter-spacing:0.12em;text-transform:uppercase;margin:0;}
+.st{font-size:18px;font-weight:800;color:#FAFAF9;margin:0;letter-spacing:-0.02em;}
+.snav{flex:1;overflow-y:auto;padding:8px 0 20px;}
+.snav::-webkit-scrollbar{width:3px;}
+.snav::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px;}
+.ni{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;cursor:pointer;transition:background 0.12s;border:none;background:none;width:100%;text-align:left;}
+.ni:hover{background:rgba(255,255,255,0.06);}
+.ni.active{background:rgba(255,255,255,0.12);}
+.nl{font-size:13px;font-weight:600;color:#E7E5E4;}
+.ni.active .nl{color:#fff;}
+.nb{font-size:10px;font-weight:800;padding:2px 6px;border-radius:99px;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#fff;border-bottom:0.5px solid #E7E5E4;flex-shrink:0;}
+.tt{font-size:20px;font-weight:800;color:#1C1917;}
+.tm{font-size:12px;color:#A8A29E;margin-top:2px;}
+.content{flex:1;overflow-y:auto;padding:16px 20px 40px;}
+.sr{display:flex;gap:10px;margin-bottom:16px;}
+.sc{flex:1;background:#fff;border:0.5px solid #E7E5E4;border-radius:10px;padding:10px 14px;text-align:center;}
+.sn{font-size:22px;font-weight:800;line-height:1;}
+.sl{font-size:11px;color:#A8A29E;margin-top:2px;}
+.ic{background:#fff;border:0.5px solid #E7E5E4;border-radius:12px;overflow:hidden;margin-bottom:8px;}
+.ir{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;}
+.ir+.ir{border-top:0.5px solid #F5F5F4;}
+.ir.dr{background:#FAFAF9;}
+.cb{width:22px;height:22px;border-radius:6px;flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.ib{flex:1;min-width:0;}
+.itn{font-size:14px;font-weight:600;line-height:1.4;margin:0;}
+.ino{font-size:12px;color:#78716C;line-height:1.5;margin:4px 0 0;white-space:pre-wrap;}
+.im{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+.ia{display:flex;gap:2px;flex-shrink:0;}
+.ib2{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;color:#D6D3D1;font-size:14px;}
+.di{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;}
+.mb{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:50;display:flex;align-items:flex-end;}
+.ms{background:#fff;border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:24px 20px 40px;}
+.fl{font-size:11px;font-weight:700;color:#78716C;display:block;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.06em;}
+.fi{width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid #E7E5E4;font-size:14px;color:#1C1917;background:#fff;}
+.ft{width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid #E7E5E4;font-size:14px;color:#1C1917;resize:vertical;}
+.hb{display:none;background:none;border:none;cursor:pointer;padding:8px;color:#FAFAF9;font-size:22px;}
+.so{display:none;}
+@media(max-width:680px){
+  .sidebar{position:fixed;left:-220px;top:0;bottom:0;z-index:40;transition:left 0.25s;}
+  .sidebar.open{left:0;}
+  .so{display:block;position:fixed;inset:0;z-index:39;background:rgba(0,0,0,0.4);}
+  .hb{display:block;}
+  .topbar{padding:10px 14px;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const TURL="https://command-center-jengrovdahl.aws-us-east-2.turso.io",TTOK="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODI2ODkyNDgsImlkIjoiMDE5ZjEwOGUtYTgwMS03MTc3LWFmMWItNGU0ZGFkYzI4MzRiIiwicmlkIjoiMjE3MzY3NTMtYmJiNC00ZTUwLWE3OTQtNWY2YjA0NGIzZWM0In0.B9k-4DukPhCUQ9AcwEu04yG42imxMmml_ib1AbmV_iq5EqqIcoI2rKPO_GELSConUyh_D6DQzzgmUpt1-LFhCw",ORG="personal",CLR="#B45309",LGT="#FEF3C7";
+const CATS=["Home", "Personal Goals", "Health & Wellness", "Finances", "Projects", "Errands"],PPL=["Jen", "Derek"],NOMS=["Nominations"];
+
+async function tq(sql,args=[]){
+  const r=await fetch(TURL+"/v2/pipeline",{method:"POST",headers:{Authorization:"Bearer "+TTOK,"Content-Type":"application/json"},
+    body:JSON.stringify({requests:[{type:"execute",stmt:{sql,args:args.map(v=>v===null?{type:"null"}:{type:"text",value:String(v)})}},{type:"close"}]}) });
+  const d=await r.json();
+  if(d.results?.[0]?.type==="error")throw new Error(d.results[0].error.message);
+  return d.results?.[0]?.response?.result;
+}
+function toObj(res){
+  if(!res?.rows)return[];
+  const cols=res.cols.map(c=>c.name);
+  return res.rows.map(row=>{const o={};cols.forEach((c,i)=>{o[c]=row[i]?.value??null;});return o;});
+}
+const fd=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}):null;
+const fdt=d=>d?new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):null;
+const ov=d=>d&&new Date(d+"T23:59:59")<new Date();
+const so=d=>{if(!d)return false;const df=new Date(d+"T23:59:59")-new Date();return df>0&&df<604800000;};
+const done=v=>v==="1"||v===1;
+
+function DPicker({value,onChange}){
+  const[e,sE]=React.useState(false),[l,sL]=React.useState(value||"");
+  const c=()=>{sE(false);if(l!==(value||""))onChange(l||null);};
+  const bg=ov(value)?"#FEF2F2":so(value)?"#FFFBEB":value?"#F5F5F4":"#F5F5F4";
+  const cl=ov(value)?"#DC2626":so(value)?"#D97706":value?"#78716C":"#C4B5A0";
+  if(e)return<input type="date" value={l} onChange={x=>sL(x.target.value)} onBlur={c} onKeyDown={x=>x.key==="Enter"&&c()} autoFocus
+    style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:99,background:bg,color:cl,border:"1.5px solid "+CLR,width:130}}/>;
+  return<span onClick={()=>{sL(value||"");sE(true);}}
+    style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:99,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:3,background:bg,color:cl,border:"1px dashed "+(value?"transparent":"#D6D3D1")}}>
+    {ov(value)?"⚠ ":so(value)?"⏰ ":""}{value?fd(value):"Add date"}</span>;
+}
+
+function APicker({value,onChange}){
+  const[e,sE]=React.useState(false),[l,sL]=React.useState(value||"");
+  const c=v=>{const x=v!==undefined?v:l;sE(false);if(x!==(value||""))onChange(x||null);};
+  if(e)return<div style={{display:"flex",flexDirection:"column",gap:4}}>
+    <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+      {PPL.map(p=><button key={p} onMouseDown={()=>c(p)} style={{padding:"3px 10px",borderRadius:99,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:l===p?CLR:"#F5F5F4",color:l===p?"#fff":"#78716C"}}>{p}</button>)}
+    </div>
+    <input value={l} onChange={x=>sL(x.target.value)} onBlur={()=>c()} onKeyDown={x=>x.key==="Enter"&&c()} placeholder="Other…" autoFocus
+      style={{border:"none",borderBottom:"1.5px solid #D6D3D1",background:"transparent",fontSize:11,width:100}}/></div>;
+  return<span onClick={()=>{sL(value||"");sE(true);}}
+    style={{fontSize:11,cursor:"pointer",color:value?"#78716C":"#C4B5A0",borderBottom:"1px dashed "+(value?"transparent":"#D6D3D1"),paddingBottom:1}}>
+    {value?"→ "+value:"Assign…"}</span>;
+}
+
+function TEdit({value,dn,onChange}){
+  const[e,sE]=React.useState(false),[l,sL]=React.useState(value);
+  const c=()=>{sE(false);if(l.trim()&&l!==value)onChange(l.trim());else sL(value);};
+  if(e)return<input className="itn" value={l} onChange={x=>sL(x.target.value)} onBlur={c}
+    onKeyDown={x=>{if(x.key==="Enter")c();if(x.key==="Escape"){sL(value);sE(false);}}} autoFocus style={{color:"#1C1917"}}/>;
+  return<p className="itn" onClick={()=>!dn&&sE(true)}
+    style={{color:dn?"#A8A29E":"#1C1917",textDecoration:dn?"line-through":"none",cursor:dn?"default":"text"}}>{value}</p>;
+}
+
+function App(){
+  const[cat,setCat]=React.useState(()=>{const s=localStorage.getItem("cc_cat_"+ORG);return(s&&CATS.includes(s))?s:CATS[0];});
+  const[items,setItems]=React.useState([]);
+  const[loading,setLoading]=React.useState(true);
+  const[error,setError]=React.useState(null);
+  const[filter,setFilter]=React.useState("open");
+  const[sbOpen,setSb]=React.useState(false);
+  const[modal,setModal]=React.useState(null);
+  const[form,setForm]=React.useState({});
+  const[saving,setSaving]=React.useState(false);
+  const[cby,setCby]=React.useState("");
+
+  const load=React.useCallback(async()=>{
+    try{setLoading(true);const r=await tq("SELECT * FROM command_center_items WHERE org=? ORDER BY completed ASC,due_date ASC,created_at ASC",[ORG]);setItems(toObj(r));setError(null);}
+    catch(e){setError(e.message);}finally{setLoading(false);}
+  },[]);
+  React.useEffect(()=>{load();},[load]);
+
+  const sf=async(id,f,v)=>{setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i));await tq("UPDATE command_center_items SET "+f+"=? WHERE id=?",[v,id]);};
+  const hc=item=>{if(done(item.completed))un(item);else{setCby(item.assigned_to||"");setModal({mode:"complete",item});}};
+  const un=async item=>{setItems(p=>p.map(i=>i.id===item.id?{...i,completed:0,completed_by:null,completed_at:null}:i));await tq("UPDATE command_center_items SET completed=0,completed_by=NULL,completed_at=NULL WHERE id=?",[item.id]);};
+  const cc=async()=>{const item=modal.item,by=cby.trim()||null,at=new Date().toISOString();setItems(p=>p.map(i=>i.id===item.id?{...i,completed:1,completed_by:by,completed_at:at}:i));await tq("UPDATE command_center_items SET completed=1,completed_by=?,completed_at=? WHERE id=?",[by,at,item.id]);setModal(null);};
+  const oA=()=>{setForm({category:cat,title:"",notes:"",due_date:"",assigned_to:""});setModal({mode:"add"});};
+  const oE=item=>{setForm({category:item.category,title:item.title,notes:item.notes||"",due_date:item.due_date||"",assigned_to:item.assigned_to||""});setModal({mode:"edit",item});};
+  const cm=()=>setModal(null);
+  const si=async()=>{if(!form.title.trim())return;setSaving(true);
+    try{if(modal.mode==="edit")await tq("UPDATE command_center_items SET category=?,title=?,notes=?,due_date=?,assigned_to=? WHERE id=?",[form.category,form.title,form.notes||null,form.due_date||null,form.assigned_to||null,modal.item.id]);
+      else await tq("INSERT INTO command_center_items (org,category,title,notes,due_date,assigned_to,completed) VALUES (?,?,?,?,?,?,0)",[ORG,form.category,form.title,form.notes||null,form.due_date||null,form.assigned_to||null]);
+      await load();cm();}finally{setSaving(false);}};
+  const di=async id=>{if(!confirm("Delete?"))return;await tq("DELETE FROM command_center_items WHERE id=?",[id]);setItems(p=>p.filter(i=>i.id!==id));};
+  const pk=c=>{setCat(c);setSb(false);localStorage.setItem("cc_cat_"+ORG,c);};
+
+  const pi=items.filter(i=>i.category===cat);
+  const disp=filter==="all"?pi:filter==="open"?pi.filter(i=>!done(i.completed)):pi.filter(i=>done(i.completed));
+  const po=pi.filter(i=>!done(i.completed)).length,pd=pi.filter(i=>done(i.completed)).length;
+  const pu=pi.filter(i=>!done(i.completed)&&(ov(i.due_date)||so(i.due_date))).length;
+  const to=items.filter(i=>!done(i.completed)).length;
+  const cc2={};CATS.forEach(c=>{const ci=items.filter(i=>i.category===c);cc2[c]={o:ci.filter(i=>!done(i.completed)).length,u:ci.some(i=>!done(i.completed)&&(ov(i.due_date)||so(i.due_date)))};});
+
+  return<div className="app">
+    {sbOpen&&<div className="so" onClick={()=>setSb(false)}/>}
+    <aside className={sbOpen?"sidebar open":"sidebar"}>
+      <div className="sh">
+        <p className="ss">Jen & Derek</p>
+        <h1 className="st">Home</h1>
+        <p style={{fontSize:11,color:"#78716C",marginTop:4}}>{to} open items</p>
+      </div>
+      <nav className="snav">
+        {CATS.map(c=>{const x=cc2[c]||{o:0,u:false};return(
+          <button key={c} className={cat===c?"ni active":"ni"} onClick={()=>pk(c)}>
+            <span className="nl">{c}</span>
+            <div style={{display:"flex",gap:4,alignItems:"center"}}>
+              {x.u&&<span style={{width:6,height:6,borderRadius:99,background:"#DC2626"}}/>}
+              {x.o>0&&<span className="nb" style={{background:cat===c?"rgba(255,255,255,0.2)":"rgba(255,255,255,0.08)",color:cat===c?"#fff":"#A8A29E"}}>{x.o}</span>}
+            </div>
+          </button>);})}</nav>
+    </aside>
+    <main style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div className="topbar">
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <button className="hb" onClick={()=>setSb(s=>!s)}>☰</button>
+          <div><p className="tt">{cat}</p><p className="tm">{po} open{pu>0?" · "+pu+" urgent":""}</p></div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {["all","open","done"].map(f=><button key={f} onClick={()=>setFilter(f)}
+            style={{padding:"5px 11px",borderRadius:99,border:"1.5px solid "+(filter===f?CLR:"#E7E5E4"),background:filter===f?CLR:"#fff",color:filter===f?"#fff":"#78716C",fontSize:12,fontWeight:600,cursor:"pointer"}}>
+            {f[0].toUpperCase()+f.slice(1)}</button>)}
+          <button onClick={oA} style={{background:CLR,color:"#fff",border:"none",borderRadius:9,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",marginLeft:4}}>+ Add</button>
+        </div>
+      </div>
+      <div className="content">
+        <div className="sr">
+          {[["Open",po,CLR],["Done",pd,"#16A34A"],["Urgent",pu,"#DC2626"]].map(([l,v,c])=>
+            <div key={l} className="sc"><p className="sn" style={{color:c}}>{v}</p><p className="sl">{l}</p></div>)}
+        </div>
+        {loading&&<p style={{textAlign:"center",color:"#78716C",padding:60}}>Loading…</p>}
+        {error&&<div style={{background:"#FEF2F2",borderRadius:10,padding:16,color:"#DC2626",fontSize:14}}>⚠ {error}</div>}
+        {!loading&&!error&&(disp.length===0
+          ?<div style={{textAlign:"center",padding:"60px 20px",color:"#A8A29E"}}>
+            <p style={{fontSize:32,marginBottom:8}}>✓</p><p style={{fontSize:15,fontWeight:600}}>{filter==="open"?"All done!":"No items"}</p>
+           </div>
+          :<div className="ic">{disp.map((item,idx)=>{
+            const dn=done(item.completed),isN=NOMS.includes(item.category);
+            return<div key={item.id} className={dn?"ir dr":"ir"}>
+              {!isN&&<button className="cb" onClick={()=>hc(item)}
+                style={{border:"2px solid "+(dn?CLR:"#D6D3D1"),background:dn?CLR:"transparent"}}>
+                {dn&&<span style={{color:"#fff",fontSize:11,fontWeight:900}}>✓</span>}</button>}
+              <div className="ib">
+                <TEdit value={item.title} dn={!isN&&dn} onChange={v=>sf(item.id,"title",v)}/>
+                {item.notes&&<p className="ino">{item.notes}</p>}
+                {!isN&&!dn&&<div className="im">
+                  <DPicker value={item.due_date} onChange={v=>sf(item.id,"due_date",v)}/>
+                  <APicker value={item.assigned_to} onChange={v=>sf(item.id,"assigned_to",v)}/>
+                </div>}
+                {!isN&&dn&&<div className="di">
+                  <span style={{color:CLR,fontWeight:700}}>✓</span>
+                  {item.completed_by&&<span style={{fontWeight:600,color:"#78716C"}}>{item.completed_by}</span>}
+                  {item.completed_at&&<span style={{color:"#A8A29E"}}>· {fdt(item.completed_at)}</span>}
+                </div>}
+                {isN&&<p style={{fontSize:11,color:"#A8A29E",fontStyle:"italic",marginTop:4}}>Edit notes to record who was nominated and when</p>}
+              </div>
+              <div className="ia">
+                {!dn&&<button className="ib2" onClick={()=>oE(item)}>✏️</button>}
+                <button className="ib2" onClick={()=>di(item.id)}>🗑</button>
+              </div>
+            </div>;})}
+          </div>)}
+      </div>
+    </main>
+    {modal?.mode==="complete"&&<div className="mb" onClick={e=>e.target===e.currentTarget&&cm()}>
+      <div className="ms">
+        <p style={{fontSize:12,color:"#A8A29E",margin:"0 0 4px",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>Marking complete</p>
+        <p style={{fontSize:15,fontWeight:700,color:"#1C1917",margin:"0 0 20px",lineHeight:1.3}}>{modal.item.title}</p>
+        <label className="fl">Who completed this?</label>
+        <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:12}}>
+          {PPL.map(p=><button key={p} onClick={()=>setCby(p)}
+            style={{padding:"7px 14px",borderRadius:99,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,background:cby===p?CLR:LGT,color:cby===p?"#fff":"#555"}}>{p}</button>)}
+        </div>
+        <input value={cby} onChange={e=>setCby(e.target.value)} placeholder="Or type a name…" className="fi" style={{marginBottom:16}}/>
+        <div style={{display:"flex",gap:10}}>
+          <button onClick={cm} style={{flex:1,padding:"13px",borderRadius:12,border:"1.5px solid #E7E5E4",background:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",color:"#78716C"}}>Cancel</button>
+          <button onClick={cc} style={{flex:2,padding:"13px",borderRadius:12,border:"none",background:CLR,color:"#fff",fontSize:14,fontWeight:800,cursor:"pointer"}}>✓ Mark complete{cby?" — "+cby:""}</button>
+        </div>
+      </div>
+    </div>}
+    {(modal?.mode==="add"||modal?.mode==="edit")&&<div className="mb" onClick={e=>e.target===e.currentTarget&&cm()}>
+      <div className="ms">
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22}}>
+          <h2 style={{margin:0,fontSize:18,fontWeight:800,color:"#1C1917"}}>{modal.mode==="edit"?"Edit":"New item"}</h2>
+          <button onClick={cm} style={{background:"#F5F5F4",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:14,color:"#78716C",fontWeight:600}}>Cancel</button>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <div><label className="fl">Category</label>
+            <select value={form.category} onChange={e=>setForm(f=>{...f,category:e.target.value})} className="fi">
+              {CATS.map(c=><option key={c}>{c}</option>)}</select></div>
+          <div><label className="fl">Title *</label>
+            <input value={form.title} onChange={e=>setForm(f=>{...f,title:e.target.value})} placeholder="What needs to happen?" className="fi"/></div>
+          <div><label className="fl">Notes</label>
+            <textarea value={form.notes} onChange={e=>setForm(f=>{...f,notes:e.target.value})} placeholder="Details…" rows={3} className="ft"/></div>
+          <div style={{display:"flex",gap:12}}>
+            <div style={{flex:1}}>
+              <label className="fl">Due date</label>
+              <input type="date" value={form.due_date} onChange={e=>setForm(f=>{...f,due_date:e.target.value})} className="fi"/></div>
+            <div style={{flex:1}}>
+              <label className="fl">Assigned to</label>
+              <input value={form.assigned_to} onChange={e=>setForm(f=>{...f,assigned_to:e.target.value})} placeholder="Name" className="fi"/></div>
+          </div>
+          <button onClick={si} disabled={saving||!form.title.trim()}
+            style={{background:CLR,color:"#fff",border:"none",borderRadius:12,padding:"15px",fontSize:15,fontWeight:800,cursor:"pointer",opacity:saving||!form.title.trim()?0.5:1}}>
+            {saving?"Saving…":modal.mode==="edit"?"Save changes":"Add item"}</button>
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
