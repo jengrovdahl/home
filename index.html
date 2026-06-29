@@ -122,6 +122,32 @@ function TEdit({value,dn,onChange}){
     style={{color:dn?"#A8A29E":"#1C1917",textDecoration:dn?"line-through":"none",cursor:dn?"default":"text"}}>{value}</p>;
 }
 
+// ── Notes renderer — makes URLs clickable ──
+function NotesDisplay({ text }) {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const lines = text.split('\n');
+  return (
+    <p className="ino" style={{whiteSpace:'pre-wrap'}}>
+      {lines.map((line, li) => {
+        const parts = line.split(urlRegex);
+        return (
+          <span key={li}>
+            {li > 0 && '\n'}
+            {parts.map((part, pi) =>
+              /^https?:\/\//.test(part)
+                ? <a key={pi} href={part} target="_blank" rel="noopener noreferrer"
+                    style={{color:'#7C3AED',textDecoration:'underline',wordBreak:'break-all'}}
+                    onClick={e=>e.stopPropagation()}>{part}</a>
+                : part
+            )}
+          </span>
+        );
+      })}
+    </p>
+  );
+}
+
 function App(){
   const[cat,setCat]=React.useState(()=>{const s=localStorage.getItem("cc_cat_"+ORG);return(s&&CATS.includes(s))?s:CATS[0];});
   const[items,setItems]=React.useState([]);
@@ -211,7 +237,7 @@ function App(){
                 {dn&&<span style={{color:"#fff",fontSize:11,fontWeight:900}}>✓</span>}</button>}
               <div className="ib">
                 <TEdit value={item.title} dn={!isN&&dn} onChange={v=>sf(item.id,"title",v)}/>
-                {item.notes&&<p className="ino">{item.notes}</p>}
+                {item.notes&&<NotesDisplay text={item.notes}/>}
                 {!isN&&!dn&&<div className="im">
                   <DPicker value={item.due_date} onChange={v=>sf(item.id,"due_date",v)}/>
                   <APicker value={item.assigned_to} onChange={v=>sf(item.id,"assigned_to",v)}/>
