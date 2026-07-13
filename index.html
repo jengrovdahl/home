@@ -86,6 +86,7 @@ const fdt=d=>d?new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeri
 const ov=d=>d&&new Date(d+"T23:59:59")<new Date();
 const so=d=>{if(!d)return false;const df=new Date(d+"T23:59:59")-new Date();return df>0&&df<604800000;};
 const done=v=>v==="1"||v===1;
+const wontdo=v=>v==="1"||v===1;
 
 function DPicker({value,onChange}){
   const[e,sE]=React.useState(false),[l,sL]=React.useState(value||"");
@@ -113,7 +114,7 @@ function APicker({value,onChange}){
     {value?"→ "+value:"Assign…"}</span>;
 }
 
-function TEdit({value,dn,onChange}){
+function TEdit({value,dn,wd,onChange}){
   const[e,sE]=React.useState(false),[l,sL]=React.useState(value);
   const c=()=>{sE(false);if(l.trim()&&l!==value)onChange(l.trim());else sL(value);};
   if(e)return<input className="itn" value={l} onChange={x=>sL(x.target.value)} onBlur={c}
@@ -161,6 +162,7 @@ function App(){
   const[cby,setCby]=React.useState("");
 
   const load=React.useCallback(async()=>{
+    try{await tq("ALTER TABLE command_center_items ADD COLUMN wont_do INTEGER DEFAULT 0");}catch(e){}
     try{setLoading(true);const r=await tq("SELECT * FROM command_center_items WHERE org=? ORDER BY completed ASC,due_date ASC,created_at ASC",[ORG]);setItems(toObj(r));setError(null);}
     catch(e){setError(e.message);}finally{setLoading(false);}
   },[]);
@@ -168,6 +170,11 @@ function App(){
 
   const sf=async(id,f,v)=>{setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i));await tq("UPDATE command_center_items SET "+f+"=? WHERE id=?",[v,id]);};
   const hc=item=>{if(done(item.completed))un(item);else{setCby(item.assigned_to||"");setModal({mode:"complete",item});}};
+  const toggleWD=async(item)=>{
+    const nv=(item.wont_do==="1"||item.wont_do===1)?0:1;
+    setItems(prev=>prev.map(i=>i.id===item.id?{...i,wont_do:nv}:i));
+    await tq("UPDATE command_center_items SET wont_do=? WHERE id=?",[String(nv),item.id]);
+  };
   const un=async item=>{setItems(p=>p.map(i=>i.id===item.id?{...i,completed:0,completed_by:null,completed_at:null}:i));await tq("UPDATE command_center_items SET completed=0,completed_by=NULL,completed_at=NULL WHERE id=?",[item.id]);};
   const cc=async()=>{const item=modal.item,by=cby.trim()||null,at=new Date().toISOString();setItems(p=>p.map(i=>i.id===item.id?{...i,completed:1,completed_by:by,completed_at:at}:i));await tq("UPDATE command_center_items SET completed=1,completed_by=?,completed_at=? WHERE id=?",[by,at,item.id]);setModal(null);};
   const oA=()=>{setForm({category:cat,title:"",notes:"",due_date:"",assigned_to:""});setModal({mode:"add"});};
@@ -181,9 +188,9 @@ function App(){
   const pk=c=>{setCat(c);setSb(false);localStorage.setItem("cc_cat_"+ORG,c);};
 
   const pi=items.filter(i=>i.category===cat);
-  const disp=filter==="all"?pi:filter==="open"?pi.filter(i=>!done(i.completed)):pi.filter(i=>done(i.completed));
-  const po=pi.filter(i=>!done(i.completed)).length,pd=pi.filter(i=>done(i.completed)).length;
-  const pu=pi.filter(i=>!done(i.completed)&&(ov(i.due_date)||so(i.due_date))).length;
+  const disp=filter==="all"?pi:filter==="open"?pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)):filter==="done"?pi.filter(i=>done(i.completed)):pi.filter(i=>wontdo(i.wont_do));
+  const po=pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)).length,pd=pi.filter(i=>done(i.completed)).length;
+  const pu=pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)&&(ov(i.due_date)||so(i.due_date))).length;
   const to=items.filter(i=>!done(i.completed)).length;
   const cc2={};CATS.forEach(c=>{const ci=items.filter(i=>i.category===c);cc2[c]={o:ci.filter(i=>!done(i.completed)).length,u:ci.some(i=>!done(i.completed)&&(ov(i.due_date)||so(i.due_date)))};});
 
@@ -212,7 +219,7 @@ function App(){
           <div><p className="tt">{cat}</p><p className="tm">{po} open{pu>0?" · "+pu+" urgent":""}</p></div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          {["all","open","done"].map(f=><button key={f} onClick={()=>setFilter(f)}
+          {["all","open","done","won't do"].map(f=><button key={f} onClick={()=>setFilter(f)}
             style={{padding:"5px 11px",borderRadius:99,border:"1.5px solid "+(filter===f?CLR:"#E7E5E4"),background:filter===f?CLR:"#fff",color:filter===f?"#fff":"#78716C",fontSize:12,fontWeight:600,cursor:"pointer"}}>
             {f[0].toUpperCase()+f.slice(1)}</button>)}
           <button onClick={oA} style={{background:CLR,color:"#fff",border:"none",borderRadius:9,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",marginLeft:4}}>+ Add</button>
@@ -236,11 +243,15 @@ function App(){
                 style={{border:"2px solid "+(dn?CLR:"#D6D3D1"),background:dn?CLR:"transparent"}}>
                 {dn&&<span style={{color:"#fff",fontSize:11,fontWeight:900}}>✓</span>}</button>}
               <div className="ib">
-                <TEdit value={item.title} dn={!isN&&dn} onChange={v=>sf(item.id,"title",v)}/>
+                <TEdit value={item.title} dn={!isN&&dn} wd={wontdo(item.wont_do)} onChange={v=>sf(item.id,"title",v)}/>
                 {item.notes&&<NotesDisplay text={item.notes}/>}
                 {!isN&&!dn&&<div className="im">
                   <DPicker value={item.due_date} onChange={v=>sf(item.id,"due_date",v)}/>
                   <APicker value={item.assigned_to} onChange={v=>sf(item.id,"assigned_to",v)}/>
+                </div>}
+                {!isN&&wontdo(item.wont_do)&&<div style={{display:"flex",alignItems:"center",gap:4,marginTop:4}}>
+                  <span style={{fontSize:11,fontWeight:700,color:"#DC2626"}}>✕</span>
+                  <span style={{fontSize:11,color:"#FCA5A5",fontWeight:500}}>Won't do</span>
                 </div>}
                 {!isN&&dn&&<div className="di">
                   <span style={{color:CLR,fontWeight:700}}>✓</span>
