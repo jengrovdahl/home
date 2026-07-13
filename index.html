@@ -149,6 +149,51 @@ function NotesDisplay({ text }) {
   );
 }
 
+
+function getLevel(item) {
+  const cat = item.category || "";
+  const title = item.title || "";
+  const notes = item.notes || "";
+  // USWT items
+  if (title.includes("USWT") || notes.includes("USWT") || 
+      title.includes("WPD") || title.includes("STEP I") || title.includes("STEP II") || title.includes("STEP III") ||
+      title.includes("Friendship Day") || title.includes("Founders Day") ||
+      title.includes("Outstanding Achievement in Programming") ||
+      title.includes("All American") || title.includes("Fellowship Builder") ||
+      title.includes("Ambassador Award") || title.includes("uswomenoftoday")) {
+    return "USWT";
+  }
+  // LOCAL items
+  if (cat === "Convention" || cat === "District Secretary" || cat === "Roster" ||
+      title.includes("chapter") || title.includes("Chapter") ||
+      title.includes("BPWT") || title.includes("District") ||
+      title.includes("Tevyan") || title.includes("Wyndham") ||
+      title.includes("hotel") || title.includes("Hotel") ||
+      title.includes("chapter social") || title.includes("m-event") ||
+      title.includes("AT CONVENTION") || title.includes("Post-convention") ||
+      cat === "Blossom Thyme" || cat === "Home" || cat === "Personal Goals" ||
+      cat === "Health & Wellness" || cat === "Projects" || cat === "Errands") {
+    return "LOCAL";
+  }
+  // MNWT items — state-level
+  if (cat === "Fast Starts" || cat === "President" || cat === "Programming VP" ||
+      cat === "Membership VP" || cat === "Secretary" || cat === "Treasurer" ||
+      cat === "State Delegate" || cat === "Parliamentarian" || cat === "Future Directions" ||
+      title.includes("MNWT") || title.includes("SUCCESS") ||
+      title.includes("trimester report") || title.includes("Trimester Report") ||
+      title.includes("Fast Start") || title.includes("state president") ||
+      notes.includes("mnwt.org") || notes.includes("emailmeform")) {
+    return "MNWT";
+  }
+  return "LOCAL";
+}
+
+const LEVEL_COLORS = {
+  "LOCAL":  { bg:"#EDE9FE", text:"#5B21B6" },
+  "MNWT":   { bg:"#DBEAFE", text:"#1E40AF" },
+  "USWT":   { bg:"#D1FAE5", text:"#065F46" },
+};
+
 function App(){
   const[cat,setCat]=React.useState(()=>{const s=localStorage.getItem("cc_cat_"+ORG);return(s&&CATS.includes(s))?s:CATS[0];});
   const[items,setItems]=React.useState([]);
@@ -192,7 +237,7 @@ function App(){
   const po=pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)).length,pd=pi.filter(i=>done(i.completed)).length;
   const pu=pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)&&(ov(i.due_date)||so(i.due_date))).length,pwd=pi.filter(i=>wontdo(i.wont_do)).length;
   const to=items.filter(i=>!done(i.completed)).length;
-  const cc2={};CATS.forEach(c=>{const ci=items.filter(i=>i.category===c);cc2[c]={o:ci.filter(i=>!done(i.completed)).length,u:ci.some(i=>!done(i.completed)&&(ov(i.due_date)||so(i.due_date)))};});
+  const cc2={};CATS.forEach(c=>{const ci=items.filter(i=>i.category===c);cc2[c]={o:ci.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)).length,u:ci.some(i=>!done(i.completed)&&!wontdo(i.wont_do)&&(ov(i.due_date)||so(i.due_date)))};});
 
   return<div className="app">
     {sbOpen&&<div className="so" onClick={()=>setSb(false)}/>}
@@ -243,7 +288,10 @@ function App(){
                 style={{border:"2px solid "+(dn?CLR:"#D6D3D1"),background:dn?CLR:"transparent"}}>
                 {dn&&<span style={{color:"#fff",fontSize:11,fontWeight:900}}>✓</span>}</button>}
               <div className="ib">
+                <div style={{display:"flex",alignItems:"flex-start",gap:6,flexWrap:"wrap"}}>
                 <TEdit value={item.title} dn={!isN&&dn} wd={wontdo(item.wont_do)} onChange={v=>sf(item.id,"title",v)}/>
+                {(()=>{const lvl=getLevel(item);const lc=LEVEL_COLORS[lvl];return<span style={{fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4,background:lc.bg,color:lc.text,flexShrink:0,marginTop:2,letterSpacing:"0.06em"}}>{lvl}</span>;})()}
+              </div>
                 {item.notes&&<NotesDisplay text={item.notes}/>}
                 {!isN&&!dn&&<div className="im">
                   <DPicker value={item.due_date} onChange={v=>sf(item.id,"due_date",v)}/>
