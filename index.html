@@ -190,7 +190,7 @@ function App(){
   const pi=items.filter(i=>i.category===cat);
   const disp=filter==="all"?pi:filter==="open"?pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)):filter==="done"?pi.filter(i=>done(i.completed)):pi.filter(i=>wontdo(i.wont_do));
   const po=pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)).length,pd=pi.filter(i=>done(i.completed)).length;
-  const pu=pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)&&(ov(i.due_date)||so(i.due_date))).length;
+  const pu=pi.filter(i=>!done(i.completed)&&!wontdo(i.wont_do)&&(ov(i.due_date)||so(i.due_date))).length,pwd=pi.filter(i=>wontdo(i.wont_do)).length;
   const to=items.filter(i=>!done(i.completed)).length;
   const cc2={};CATS.forEach(c=>{const ci=items.filter(i=>i.category===c);cc2[c]={o:ci.filter(i=>!done(i.completed)).length,u:ci.some(i=>!done(i.completed)&&(ov(i.due_date)||so(i.due_date)))};});
 
@@ -227,7 +227,7 @@ function App(){
       </div>
       <div className="content">
         <div className="sr">
-          {[["Open",po,CLR],["Done",pd,"#16A34A"],["Urgent",pu,"#DC2626"]].map(([l,v,c])=>
+          {[["Open",po,CLR],["Done",pd,"#16A34A"],["Urgent",pu,"#DC2626"],["Won't Do",pwd,"#9CA3AF"]].map(([l,v,c])=>
             <div key={l} className="sc"><p className="sn" style={{color:c}}>{v}</p><p className="sl">{l}</p></div>)}
         </div>
         {loading&&<p style={{textAlign:"center",color:"#78716C",padding:60}}>Loading…</p>}
